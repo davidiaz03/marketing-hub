@@ -4,6 +4,8 @@
 Comprueba, sin red y sin dependencias:
   - profiles/*.json cumplen el esquema (profiles/README.md).
   - experiments/index.json coincide con los archivos de experiments/.
+  - El resumen generado experiments/medicion-ultima.md cita su informe
+    fuente (y no va al índice: no es un experimento).
   - Las plantillas y los packs de campaña tienen todas las secciones.
   - La biblioteca tiene sus 12 ganchos y 11 formatos.
   - Ningún archivo de contenido lleva secretos (teléfonos, tokens, correos).
@@ -41,6 +43,10 @@ STRATEGY_SECTIONS = [
     "Calendario y ritmo", "KPIs", "Restricciones", "Revisión",
 ]
 CALENDAR_HEADER = "| Día | Canal | Pieza | Formato | Gancho | Estado |"
+
+# Archivos de experiments/ que no son experimentos y no van al índice:
+# el README y el resumen generado por scripts/sync_medicion.py.
+EXPERIMENTS_FUERA_DEL_INDICE = {"README.md", "medicion-ultima.md"}
 
 CONTENT_DIRS = ["profiles", "strategy", "library", "campaigns",
                 "experiments", "calendar"]
@@ -189,10 +195,26 @@ def validate_experiments_index(root):
                  f"el archivo '{archivo}' no existe")
 
     on_disk = {str(p.relative_to(root)) for p in exp_dir.glob("*.md")
-               if p.name != "README.md"}
+               if p.name not in EXPERIMENTS_FUERA_DEL_INDICE}
     for missing in sorted(on_disk - indexed):
         _err(errors, where,
              f"el archivo '{missing}' no está en el índice")
+    return errors
+
+
+def validate_medicion_summary(root):
+    """El resumen generado cita su informe fuente (referencia, no copia)."""
+    errors = []
+    path = root / "experiments" / "medicion-ultima.md"
+    if not path.is_file():
+        return errors  # opcional hasta la primera medición sincronizada
+    text = path.read_text(encoding="utf-8")
+    if "medicion-" not in text or ".json" not in text:
+        _err(errors, "experiments/medicion-ultima.md",
+             "debe citar su informe fuente (medicion-AAAA-MM-DD.json)")
+    if "sync_medicion.py" not in text:
+        _err(errors, "experiments/medicion-ultima.md",
+             "debe indicar que lo genera scripts/sync_medicion.py")
     return errors
 
 
@@ -253,6 +275,7 @@ def validate_all(root=REPO):
     for path in sorted((root / "profiles").glob("*.json")):
         errors += validate_profile(path)
     errors += validate_experiments_index(root)
+    errors += validate_medicion_summary(root)
     errors += validate_sections(root / "campaigns" / "plantilla-campana.md",
                                 CAMPAIGN_SECTIONS)
     for pack in sorted((root / "campaigns").glob("*/pack.md")):

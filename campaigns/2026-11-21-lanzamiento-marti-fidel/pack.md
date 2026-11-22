@@ -68,9 +68,10 @@ y de los términos comerciales de Flow Music.
 - **Métricas:** reacciones, comentarios, compartidos y vistas en Facebook
   (lo que la plataforma exponga).
 - **Fuente:** informe de `measure.py` de la semana de publicación
-  (referencia, no copia). `measure.py` está en construcción en la rama
-  `work/preprod-2026-11-21`; hasta que aterrice, la medición es manual
-  desde la página.
+  (referencia, no copia) + el resumen sincronizado
+  `experiments/medicion-ultima.md` (se actualiza con
+  `python3 scripts/sync_medicion.py` tras cada medición semanal;
+  `measure.py` aterrizó el 21-nov-2026).
 - **Línea base:** reels sin presentadora 32–69 reacciones; virales de la
   cuenta 9,1K–14K reacciones, 115K–119K vistas. Fuente: MEMORY.md y
   `preprod/NARRATIVA.md` R30.

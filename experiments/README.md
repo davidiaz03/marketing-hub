@@ -48,6 +48,19 @@ preprod (`measure.py`, en `preprod/research/`), referenciados por ruta y
 fecha. Nunca se copian los informes enteros aquí y nunca se anota un
 número sin su fuente.
 
+## El resumen sincronizado (`medicion-ultima.md`)
+
+`experiments/medicion-ultima.md` es la referencia rápida de la última
+medición: top/bottom de la semana, medianas y hallazgos, generados por
+`scripts/sync_medicion.py` desde el JSON del informe más reciente. Los
+números salen del JSON por programa, nunca copiados a mano, y el archivo
+cita su informe fuente por ruta y fecha.
+
+No es un experimento: no entra en `index.json` y el validador lo excluye
+del chequeo índice↔archivos. No se edita a mano: se regenera corriendo
+el sync tras cada medición semanal (el cron de los lunes ya corre
+`measure.py`; no hace falta un cron nuevo).
+
 ## Regla
 
 Un experimento sin veredicto no está cerrado. Un experimento cerrado sin

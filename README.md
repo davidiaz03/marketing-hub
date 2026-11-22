@@ -24,6 +24,8 @@ marketing/
   experiments/ Registro de experimentos (un archivo por experimento + índice).
   calendar/    Plantilla de calendario semanal + semana de ejemplo.
   scripts/     validate.py — validador del repo (sin dependencias).
+               sync_medicion.py — sincroniza la última medición de
+               preprod a experiments/medicion-ultima.md.
   tests/       Suite (unittest, stdlib).
 ```
 
@@ -48,7 +50,7 @@ experimentos con números reales (ver `experiments/README.md`).
 |---|---|---|
 | Escáner de outliers | `~/workspace/remotion-hub/repo/scripts/preprod/outliers.py` | `scan --platform all --max 30`; los informes en `preprod/research/` alimentan `library/` |
 | Generador de propuestas | `~/workspace/remotion-hub/repo/scripts/preprod/propose.py` | `rank`/`daily` dan la shortlist de ideas del Memorial para el calendario |
-| Medición | `~/workspace/remotion-hub/repo/scripts/preprod/measure.py` | **EN CONSTRUCCIÓN** (rama `work/preprod-2026-11-21`) al crear este repo. Cuando aterrice, sus informes en `preprod/research/` alimentan `experiments/` y los KPIs de `strategy/` |
+| Medición | `~/workspace/remotion-hub/repo/scripts/preprod/measure.py` | **ACTIVA** (aterrizó 21-nov-2026, commit `50ac2f1`, rama `work/preprod-2026-11-21`). Sus informes en `preprod/research/` alimentan `experiments/` y los KPIs de `strategy/` vía `scripts/sync_medicion.py` (ver abajo) |
 
 Ningún código de esos motores se copia aquí. Los informes se leen y se
 referencian por ruta y fecha, nunca se duplican.
@@ -58,6 +60,30 @@ Documentos del Memorial que se referencian (no se copian):
 `preprod/FORMATOS.md` (versión específica del Memorial de la biblioteca),
 `preprod/RANKING.md` (ranking del Memorial; su C2 no aplica a otros
 perfiles).
+
+## Sincronización de la medición
+
+La medición de preprod (`measure.py`) ya existe y tiene informes reales
+en `preprod/research/medicion-*.json`. La conexión con este ecosistema es
+`scripts/sync_medicion.py`: lee el informe más reciente y regenera el
+resumen `experiments/medicion-ultima.md` (top/bottom de la semana,
+medianas y hallazgos) por referencia al informe original. Los números
+salen del JSON por programa, nunca copiados a mano.
+
+Procedimiento semanal:
+
+```bash
+cd ~/workspace/marketing
+python3 scripts/sync_medicion.py   # tras cada medición semanal
+```
+
+No hace falta un cron nuevo: el cron `preprod-trends-weekly` (lunes
+09:00, America/Puerto_Rico) ya corre `measure.py` junto al escáner de
+outliers; el sync se corre después de esa corrida (o cuando se necesite
+el resumen actualizado para un experimento, una campaña o los KPIs).
+El resumen generado NO es un experimento: no entra en
+`experiments/index.json` y el validador lo excluye de ese chequeo (ver
+`experiments/README.md`).
 
 ## Cómo añadir un proyecto
 
@@ -99,8 +125,10 @@ actualización de la biblioteca.
 ## Límites honestos
 
 - El validador comprueba estructura, no verdad.
-- `measure.py` estaba en construcción al crear este ecosistema: hasta que
-  aterrice, la medición es manual.
+- La medición tiene límites propios (ver el informe de cada semana):
+  Facebook se mide por vía de URLs porque el conector no descubre la
+  Página, y los insights propios de Instagram necesitan reactivar la
+  sesión de @memorialdenuncia (sin eso, solo likes públicos).
 - El ranking de preprod es del Memorial: para otros perfiles, la
   selección de ideas es manual hasta que exista un ranking propio.
 - La biblioteca nace de una investigación del 21-nov-2026 (15 videos +
@@ -115,3 +143,9 @@ biblioteca general (12 ganchos, 11 formatos), plantilla de campaña +
 pack trabajado (lanzamiento del reel Martí-Fidel V6.1), registro de
 experimentos con el retrospectivo presentadora-a-cámara, plantilla de
 calendario + semana de ejemplo.
+
+**21-nov-2026 (noche): integración con la medición activada.**
+`scripts/sync_medicion.py` conecta los informes de `measure.py` con
+`experiments/medicion-ultima.md`; primer informe real sincronizado
+(21-nov: reel Pilar 222 likes, 10,09x la mediana; reels ~4x
+fotos/carruseles en ambas plataformas). Validador + suite en verde.
